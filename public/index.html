@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GuideAI</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/officeparser/dist/officeparser.browser.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/officeparser@6.1.0/dist/index.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1197,12 +1197,12 @@
     analyzeBtn.disabled = true;
     const originalText = uploadBtn.innerHTML;
     uploadBtn.innerHTML = `<svg class="typing-dots" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32"><animate attributeName="stroke-dashoffset" values="32;0" dur="1s" repeatCount="indefinite"/></circle></svg> Extracting...`;
+    const buffer = await file.arrayBuffer();
 
     try {
       // If parsing PDF, provide pdfWorkerSrc. Otherwise not strictly needed, but good practice if PDF is uploaded.
-      const parsedText = await officeParser.parseOffice(file, {
-        pdfWorkerSrc: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
-      });
+      const ast = await officeParser.parseOffice(new Uint8Array(buffer));
+      const parsedText =  ast.toText();
 
       if (!parsedText || !parsedText.trim()) {
         showToast("No text could be extracted from this document.");
