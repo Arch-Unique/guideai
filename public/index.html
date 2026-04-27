@@ -1201,7 +1201,7 @@
 
     try {
       // If parsing PDF, provide pdfWorkerSrc. Otherwise not strictly needed, but good practice if PDF is uploaded.
-      const ast = await officeParser.parseOffice(new Uint8Array(buffer));
+      const ast = await officeParser.parseOffice(buffer);
       const parsedText =  ast.toText();
 
       if (!parsedText || !parsedText.trim()) {
