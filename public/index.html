@@ -417,6 +417,271 @@
       cursor: pointer;
       padding: 4px;
     }
+
+    /* ── AI DETECTOR PANEL ── */
+    #detector-panel {
+      flex: 1;
+      display: none; /* hidden by default */
+      flex-direction: column;
+      overflow-y: auto;
+      background: var(--bg);
+      position: relative;
+    }
+    #detector-panel.active { display: flex; }
+
+    .detector-content {
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .detector-header { margin-bottom: 8px; }
+    .detector-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .detector-title-badge {
+      font-size: 11px;
+      background: rgba(244,121,32,0.15);
+      color: var(--accent);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .detector-desc {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .detector-input-area {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .detector-input-area:focus-within { border-color: var(--accent); }
+
+    #detector-textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 180px;
+    }
+    #detector-textarea::placeholder { color: var(--muted2); }
+
+    .detector-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+    }
+    .char-count {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--muted);
+    }
+    .char-count.warning { color: #f59e0b; }
+
+    .analyze-btn {
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .analyze-btn:hover { opacity: 0.9; }
+    .analyze-btn:active { transform: scale(0.96); }
+    .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Detector Results */
+    #detector-results {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: none;
+      animation: fadeSlide 0.3s ease;
+    }
+
+    .result-banner {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .verdict-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .verdict-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .verdict-text {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 800;
+    }
+    .confidence-chip {
+      display: inline-flex;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: max-content;
+      margin-top: 4px;
+    }
+
+    /* Gauge */
+    .gauge-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .gauge-bg { fill: none; stroke: var(--surface2); stroke-width: 8; }
+    .gauge-fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 200; /* ~ 2 * pi * 32 */
+      stroke-dashoffset: 200;
+      transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gauge-text {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .result-body {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    @media (max-width: 700px) { .result-body { grid-template-columns: 1fr; } }
+
+    .result-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .reason-list { display: flex; flex-direction: column; gap: 8px; }
+    .reason-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .reason-item::before {
+      content: "•";
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .ratings-grid { display: flex; flex-direction: column; gap: 14px; }
+    .rating-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .rating-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .rating-bar-bg {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .rating-bar-fill {
+      height: 100%;
+      background: var(--muted);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .result-summary {
+      grid-column: 1 / -1;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* Skeleton Loading */
+    .skeleton-box {
+      background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes skeletonLoading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Verdict Colors */
+    .verdict-human .verdict-text { color: #22c55e; }
+    .verdict-human .gauge-fill { stroke: #22c55e; }
+    .verdict-possible .verdict-text { color: #f59e0b; }
+    .verdict-possible .gauge-fill { stroke: #f59e0b; }
+    .verdict-likely .verdict-text { color: #f47920; }
+    .verdict-likely .gauge-fill { stroke: #f47920; }
+    .verdict-certain .verdict-text { color: #ef4444; }
+    .verdict-certain .gauge-fill { stroke: #ef4444; }
     
     @media (max-width: 680px) {
       #sidebar {
@@ -456,9 +721,13 @@
         <div class="logo-dot"></div>
         GuideAI
       </div>
-      <button class="new-chat-btn" onclick="startNewChat()">
+      <button class="new-chat-btn" onclick="showChat(); startNewChat()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         New Chat
+      </button>
+      <button class="new-chat-btn" onclick="showDetector()" style="background: transparent; border-color: var(--border); color: var(--text); margin-top: 8px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        AI Detector
       </button>
     </div>
 
@@ -517,6 +786,78 @@
     </div>
   </main>
 
+  <!-- AI DETECTOR PANEL -->
+  <main id="detector-panel">
+    <div id="topbar" style="border-bottom: 1px solid var(--border); background: var(--bg);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="sidebar-toggle" onclick="toggleSidebar()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="topbar-title">AI Text Detector</div>
+      </div>
+    </div>
+
+    <div class="detector-content">
+      <div class="detector-header">
+        <div class="detector-title">
+          Is this AI or Human?
+          <span class="detector-title-badge">BETA</span>
+        </div>
+        <div class="detector-desc">Paste an article, email, or essay below to analyze its origin. Minimum 50 characters.</div>
+      </div>
+
+      <div class="detector-input-area">
+        <textarea id="detector-textarea" placeholder="Paste your text here..." oninput="updateDetectorCharCount()"></textarea>
+        <div class="detector-actions">
+          <div class="char-count" id="detector-char-count">0 chars</div>
+          <button class="analyze-btn" id="analyze-btn" onclick="analyzeText()" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m2 12 5.25 5 2.625-7.5L13.5 17 22 5"/></svg>
+            Analyze Text
+          </button>
+        </div>
+      </div>
+
+      <div id="detector-results">
+        <!-- Banner -->
+        <div class="result-banner" id="detector-banner">
+          <div class="verdict-box">
+            <div class="verdict-label">Verdict</div>
+            <div class="verdict-text" id="detector-verdict">--</div>
+            <div class="confidence-chip" id="detector-confidence">Confidence: --</div>
+          </div>
+          <div class="gauge-container">
+            <svg class="gauge-svg" viewBox="0 0 80 80">
+              <circle class="gauge-bg" cx="40" cy="40" r="32"></circle>
+              <circle class="gauge-fill" id="detector-gauge-fill" cx="40" cy="40" r="32"></circle>
+            </svg>
+            <div class="gauge-text" id="detector-score">0</div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="result-body">
+          <div class="result-section">
+            <div class="result-section-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              Key Signals Detected
+            </div>
+            <div class="reason-list" id="detector-reasons"></div>
+          </div>
+
+          <div class="result-section">
+            <div class="result-section-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l2-9 5 18 3-9h6"/></svg>
+              Quality Metrics (1-10)
+            </div>
+            <div class="ratings-grid" id="detector-ratings"></div>
+          </div>
+
+          <div class="result-summary" id="detector-summary"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
 </div>
 
 <div id="toast"></div>
@@ -549,6 +890,18 @@
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('overlay').classList.remove('show');
   }
+  function showChat() {
+    document.getElementById('detector-panel').classList.remove('active');
+    document.getElementById('main').style.display = 'flex';
+    document.getElementById('sidebar').classList.remove('open');
+  }
+
+  function showDetector() {
+    document.getElementById('main').style.display = 'none';
+    document.getElementById('detector-panel').classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+  }
+
   // ── MODEL ─────────────────────────────────────────────────────────
   function onModelChange() { updateModelBadge(); }
   function updateModelBadge() {
@@ -781,6 +1134,133 @@
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br>')
       .replace(/^(.+)$/, '<p>$1</p>');
+  }
+
+  // ── AI DETECTOR LOGIC ─────────────────────────────────────────────
+  function updateDetectorCharCount() {
+    const text = document.getElementById('detector-textarea').value.trim();
+    const countEl = document.getElementById('detector-char-count');
+    const btn = document.getElementById('analyze-btn');
+    
+    countEl.textContent = `${text.length} chars`;
+    if (text.length > 0 && text.length < 50) {
+      countEl.classList.add('warning');
+      countEl.textContent += ' (min 50 required)';
+      btn.disabled = true;
+    } else {
+      countEl.classList.remove('warning');
+      btn.disabled = text.length === 0;
+    }
+  }
+
+  async function analyzeText() {
+    const text = document.getElementById('detector-textarea').value.trim();
+    if (text.length < 50) return;
+
+    const btn = document.getElementById('analyze-btn');
+    const results = document.getElementById('detector-results');
+    
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="typing-dots" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32"><animate attributeName="stroke-dashoffset" values="32;0" dur="1s" repeatCount="indefinite"/></circle></svg> Analyzing...`;
+    
+    // Show skeleton
+    results.style.display = 'block';
+    results.innerHTML = `<div class="result-banner skeleton-box" style="height:120px;"></div><div class="result-body skeleton-box" style="height:300px; margin-top:-10px;"></div>`;
+
+    try {
+      const res = await fetch(`${API_BASE}/detect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }) // Uses fixed model on backend
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to analyze text');
+      }
+
+      const data = await res.json();
+      renderDetectorResults(data);
+
+    } catch (err) {
+      showToast(err.message || 'Error connecting to detector service');
+      results.style.display = 'none';
+    } finally {
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m2 12 5.25 5 2.625-7.5L13.5 17 22 5"/></svg> Analyze Text`;
+      btn.disabled = false;
+    }
+  }
+
+  function renderDetectorResults(data) {
+    const results = document.getElementById('detector-results');
+    
+    // Determine color class
+    let colorClass = 'verdict-certain';
+    if (data.score <= 30) colorClass = 'verdict-human';
+    else if (data.score <= 60) colorClass = 'verdict-possible';
+    else if (data.score <= 85) colorClass = 'verdict-likely';
+
+    // Calculate gauge offset (stroke-dasharray is 200, so offset 200 is empty, 0 is full)
+    const offset = 200 - (data.score / 100 * 200);
+
+    let reasonsHtml = '';
+    if (data.reasons && data.reasons.length) {
+      reasonsHtml = data.reasons.map(r => `<div class="reason-item">${esc(r)}</div>`).join('');
+    } else {
+      reasonsHtml = '<div class="reason-item" style="color:var(--muted2)">No specific signals detected</div>';
+    }
+
+    let ratingsHtml = '';
+    if (data.ratings) {
+      for (const [key, val] of Object.entries(data.ratings)) {
+        const title = key.charAt(0).toUpperCase() + key.slice(1);
+        ratingsHtml += `
+          <div class="rating-row">
+            <div class="rating-header">
+              <span>${esc(title)}</span>
+              <span>${val}/10</span>
+            </div>
+            <div class="rating-bar-bg">
+              <div class="rating-bar-fill" style="width: ${val * 10}%"></div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    results.innerHTML = `
+      <div class="result-banner ${colorClass}" id="detector-banner">
+        <div class="verdict-box">
+          <div class="verdict-label">Verdict</div>
+          <div class="verdict-text" id="detector-verdict">${esc(data.verdict)}</div>
+          <div class="confidence-chip" id="detector-confidence">Confidence: ${esc(data.confidence)}</div>
+        </div>
+        <div class="gauge-container">
+          <svg class="gauge-svg" viewBox="0 0 80 80">
+            <circle class="gauge-bg" cx="40" cy="40" r="32"></circle>
+            <circle class="gauge-fill" id="detector-gauge-fill" cx="40" cy="40" r="32" style="stroke-dashoffset: ${offset}"></circle>
+          </svg>
+          <div class="gauge-text" id="detector-score">${data.score}</div>
+        </div>
+      </div>
+      <div class="result-body">
+        <div class="result-section">
+          <div class="result-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            Key Signals Detected
+          </div>
+          <div class="reason-list" id="detector-reasons">${reasonsHtml}</div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l2-9 5 18 3-9h6"/></svg>
+            Quality Metrics (1-10)
+          </div>
+          <div class="ratings-grid" id="detector-ratings">${ratingsHtml}</div>
+        </div>
+        <div class="result-summary" id="detector-summary">${esc(data.summary)}</div>
+      </div>
+    `;
   }
 </script>
 </body>

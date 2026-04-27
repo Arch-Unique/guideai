@@ -47,6 +47,26 @@ User: "My SQL query returns duplicates, fix it" → Guide them: ask to see the q
 - Celebrate when they're on the right track
 - Keep responses concise but complete`;
 
+// ── DETECTOR PROMPT ───────────────────────────────────────────────
+const DETECTOR_PROMPT = `You are an AI text analysis engine. Your job is to analyze the provided text and determine if it was written by an AI or a Human.
+Respond ONLY with a valid JSON object matching this exact structure, with no markdown formatting or extra text:
+{
+  "score": 87, // 0-100, where 100 means almost certainly AI, 0 means almost certainly Human
+  "verdict": "Likely AI", // "Human", "Possibly AI", "Likely AI", or "Almost Certainly AI"
+  "confidence": "High", // "Low", "Medium", or "High"
+  "reasons": [
+    "Overly uniform sentence length",
+    "Lack of personal anecdotes"
+  ], // 2-4 bullet points explaining the score
+  "ratings": {
+    "clarity": 9,
+    "depth": 6,
+    "originality": 3,
+    "tone": 7
+  }, // quality ratings from 1-10
+  "summary": "The text exhibits high structural uniformity and generic vocabulary typical of LLM generation." // 2-3 sentence overall summary
+}`;
+
 // ── HELPER: generate session title from first message ─────────────
 async function generateTitle(firstMessage) {
   try {
@@ -154,6 +174,41 @@ app.post('/chat', async (c) => {
 
   } catch (err) {
     console.error('Chat error:', err);
+    return c.json({ error: err.message || 'Internal server error' }, 500);
+  }
+});
+
+// ── POST /detect ──────────────────────────────────────────────────
+app.post('/detect', async (c) => {
+  const { text } = await c.req.json();
+
+  if (!text?.trim() || text.length < 50) {
+    return c.json({ error: 'Text must be at least 50 characters.' }, 400);
+  }
+
+  try {
+    const reply = await callOllama({
+      model: 'gpt-oss:120b-cloud',
+      messages: [
+        { role: 'system', content: DETECTOR_PROMPT },
+        { role: 'user', content: text },
+      ],
+    });
+
+    let result;
+    try {
+      // Try to parse the JSON response. Strip markdown if the model added it despite instructions.
+      const cleanedReply = reply.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
+      result = JSON.parse(cleanedReply);
+    } catch (parseErr) {
+      console.error('Failed to parse detector JSON:', reply);
+      return c.json({ error: 'Model returned invalid response format.' }, 500);
+    }
+
+    return c.json(result);
+
+  } catch (err) {
+    console.error('Detector error:', err);
     return c.json({ error: err.message || 'Internal server error' }, 500);
   }
 });
