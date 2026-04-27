@@ -14,8 +14,6 @@ const ollama = new Ollama({
   headers: {
     Authorization: `Bearer ${process.env.OLLAMA_API_KEY}`,
   },
-
-
 });
 
 // ── SYSTEM PROMPT ─────────────────────────────────────────────────

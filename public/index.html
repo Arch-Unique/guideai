@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GuideAI</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/officeparser/dist/officeparser.browser.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -521,6 +522,30 @@
     .analyze-btn:active { transform: scale(0.96); }
     .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    .upload-btn {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .upload-btn:hover { background: var(--surface2); border-color: rgba(255,255,255,0.2); }
+    .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .upload-btn svg { flex-shrink: 0; }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
     /* Detector Results */
     #detector-results {
       background: var(--surface);
@@ -810,10 +835,17 @@
         <textarea id="detector-textarea" placeholder="Paste your text here..." oninput="updateDetectorCharCount()"></textarea>
         <div class="detector-actions">
           <div class="char-count" id="detector-char-count">0 chars</div>
-          <button class="analyze-btn" id="analyze-btn" onclick="analyzeText()" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m2 12 5.25 5 2.625-7.5L13.5 17 22 5"/></svg>
-            Analyze Text
-          </button>
+          <div class="action-buttons">
+            <input type="file" id="detector-file-upload" accept=".docx,.pptx,.xlsx,.pdf,.odt,.odp,.ods,.rtf" style="display: none;" onchange="handleFileUpload(event)">
+            <button class="upload-btn" id="upload-btn" onclick="document.getElementById('detector-file-upload').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload Doc
+            </button>
+            <button class="analyze-btn" id="analyze-btn" onclick="analyzeText()" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m2 12 5.25 5 2.625-7.5L13.5 17 22 5"/></svg>
+              Analyze Text
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1150,6 +1182,44 @@
     } else {
       countEl.classList.remove('warning');
       btn.disabled = text.length === 0;
+    }
+  }
+
+  async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const uploadBtn = document.getElementById('upload-btn');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const textarea = document.getElementById('detector-textarea');
+
+    uploadBtn.disabled = true;
+    analyzeBtn.disabled = true;
+    const originalText = uploadBtn.innerHTML;
+    uploadBtn.innerHTML = `<svg class="typing-dots" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32"><animate attributeName="stroke-dashoffset" values="32;0" dur="1s" repeatCount="indefinite"/></circle></svg> Extracting...`;
+
+    try {
+      // If parsing PDF, provide pdfWorkerSrc. Otherwise not strictly needed, but good practice if PDF is uploaded.
+      const parsedText = await officeParser.parseOffice(file, {
+        pdfWorkerSrc: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
+      });
+
+      if (!parsedText || !parsedText.trim()) {
+        showToast("No text could be extracted from this document.");
+      } else {
+        textarea.value = parsedText.trim();
+        updateDetectorCharCount();
+        showToast("Text extracted successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error extracting text from document.");
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = originalText;
+      updateDetectorCharCount();
+      // Reset input value so the same file can be uploaded again if needed
+      event.target.value = '';
     }
   }
 
